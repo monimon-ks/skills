@@ -1,64 +1,70 @@
 # skills
-Skills repo to sync through devices. (mostly for claude-code)
+
+Claude Code agent team harnesses to sync across devices.
 
 ## Quick Install
 
 ```bash
-# Clone on a new machine
 git clone git@github.com:monimon-ks/skills.git
 ```
 
 ### macOS / Linux
 
 ```bash
-./install.sh                        # Global install to ~/.claude/
-./install.sh --project /path/to/project  # Per-project install
+./install.sh                                # All harnesses globally to ~/.claude/
+./install.sh thesis-advisor meal-planner     # Specific harnesses only
+./install.sh --project /path/to/project      # Into a project's .claude/
+./install.sh --list                          # List available harnesses
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
-.\install.ps1                                # Global install to ~/.claude/
-.\install.ps1 --project C:\path\to\project   # Per-project install
+.\install.ps1                                        # All harnesses globally to ~/.claude/
+.\install.ps1 thesis-advisor meal-planner             # Specific harnesses only
+.\install.ps1 -Project -Target C:\path\to\project     # Into a project's .claude/
+.\install.ps1 -List                                   # List available harnesses
 ```
 
-## What's Included
+## Available Harnesses
 
-### Skills (15) - trigger with `/skill-name`
+| Harness | Agents | Skills | Trigger |
+|---------|--------|--------|---------|
+| thesis-advisor | 5 | 3 | `/thesis-advisor` |
+| research-assistant | 5 | 3 | `/research-assistant` |
+| personal-finance | 5 | 3 | `/personal-finance` |
+| travel-planner | 4 | 3 | `/travel-planner` |
+| meal-planner | 4 | 3 | `/meal-planner` |
 
-| Skill | Description |
-|-------|-------------|
-| `/thesis-advisor` | Thesis writing orchestrator |
-| `/academic-writing-style` | Academic writing style guide |
-| `/research-methodology` | Research methodology guidance |
-| `/research-assistant` | Research assistant orchestrator |
-| `/citation-formatter` | Citation format conversion (APA/MLA/Chicago/BibTeX) |
-| `/systematic-review-protocol` | Systematic review (PRISMA, PICO, Boolean search) |
-| `/personal-finance` | Personal finance orchestrator |
-| `/compound-interest-simulator` | Compound interest calculations |
-| `/financial-ratio-analyzer` | Financial ratio analysis |
-| `/travel-planner` | Travel planning orchestrator |
-| `/budget-calculator` | Travel budget calculations |
-| `/route-optimizer` | Route optimization |
-| `/meal-planner` | Meal planning orchestrator |
-| `/nutrition-calculator` | Nutrition calculations |
-| `/ingredient-substitution-engine` | Ingredient substitution (allergies, seasonal, budget) |
+## Structure
 
-### Agents (23)
+```
+harnesses/
+├── thesis-advisor/
+│   ├── CLAUDE.md
+│   ├── agents/ (5)
+│   └── skills/ (3)
+├── research-assistant/
+│   ├── CLAUDE.md
+│   ├── agents/ (5)
+│   └── skills/ (3)
+├── personal-finance/
+│   ├── CLAUDE.md
+│   ├── agents/ (5)
+│   └── skills/ (3)
+├── travel-planner/
+│   ├── CLAUDE.md
+│   ├── agents/ (4)
+│   └── skills/ (3)
+└── meal-planner/
+    ├── CLAUDE.md
+    ├── agents/ (4)
+    └── skills/ (3)
+```
 
-**Thesis Advisor**: literature-analyst, methodology-expert, proofreader, topic-explorer, writing-coach
-
-**Research Assistant**: critic-synthesizer, literature-searcher, note-taker, reference-manager, research-coordinator
-
-**Personal Finance**: budget-planner, finance-reviewer, financial-analyst, investment-advisor, tax-strategist
-
-**Travel Planner**: budget-manager, destination-analyst, itinerary-designer, local-guide
-
-**Meal Planner**: meal-designer, nutritionist, recipe-writer, shopping-coordinator
+Each harness is self-contained with its own agents, skills, and documentation. See the `CLAUDE.md` inside each harness for details.
 
 ## Plugins (global, via `~/.claude/settings.json`)
-
-These are installed globally and not project-specific:
 
 ```
 frontend-design, superpowers, code-review, code-simplifier, github,

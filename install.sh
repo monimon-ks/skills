@@ -1,48 +1,108 @@
 #!/bin/bash
-# Install Claude Code skills and agents globally (~/.claude/) or into a project
+# Install Claude Code agent team harnesses globally (~/.claude/) or into a project
 # Usage:
-#   ./install.sh              # Install globally to ~/.claude/
-#   ./install.sh --project    # Install to current directory's .claude/
-#   ./install.sh --project /path/to/project
+#   ./install.sh                              # Install ALL harnesses globally
+#   ./install.sh thesis-advisor meal-planner   # Install specific harnesses globally
+#   ./install.sh --project [path]              # Install ALL harnesses into a project
+#   ./install.sh --project [path] thesis-advisor  # Install specific harnesses into a project
+#   ./install.sh --list                        # List available harnesses
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+HARNESS_DIR="$SCRIPT_DIR/harnesses"
 
-if [ "$1" = "--project" ]; then
-  TARGET="${2:-.}"
-  TARGET="$(cd "$TARGET" && pwd)"
+# Parse arguments
+PROJECT_MODE=false
+LIST_MODE=false
+TARGET=""
+HARNESSES=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --project)
+      PROJECT_MODE=true
+      if [[ -n "$2" && "$2" != --* ]]; then
+        TARGET="$(cd "$2" && pwd)"
+        shift
+      else
+        TARGET="$(pwd)"
+      fi
+      shift
+      ;;
+    --list)
+      LIST_MODE=true
+      shift
+      ;;
+    *)
+      HARNESSES+=("$1")
+      shift
+      ;;
+  esac
+done
+
+# --list mode
+if $LIST_MODE; then
+  echo "Available harnesses:"
+  for dir in "$HARNESS_DIR"/*/; do
+    name=$(basename "$dir")
+    agents=$(ls "$dir/agents/"*.md 2>/dev/null | wc -l | tr -d ' ')
+    skills=$(ls -d "$dir/skills/"*/ 2>/dev/null | wc -l | tr -d ' ')
+    echo "  $name ($agents agents, $skills skills)"
+  done
+  exit 0
+fi
+
+# Determine destination
+if $PROJECT_MODE; then
   DEST="$TARGET/.claude"
 else
   DEST="$HOME/.claude"
 fi
 
-echo "Installing Claude Code skills & agents into: $DEST/"
+# If no harnesses specified, install all
+if [ ${#HARNESSES[@]} -eq 0 ]; then
+  for dir in "$HARNESS_DIR"/*/; do
+    HARNESSES+=("$(basename "$dir")")
+  done
+fi
 
-# Create directories
-mkdir -p "$DEST/agents"
-mkdir -p "$DEST/skills"
+echo "Installing harnesses into: $DEST/"
+mkdir -p "$DEST/agents" "$DEST/skills"
 
-# Copy agents
-echo "Copying agents..."
-cp -r "$SCRIPT_DIR/agents/"*.md "$DEST/agents/"
-AGENT_COUNT=$(ls "$SCRIPT_DIR/agents/"*.md 2>/dev/null | wc -l | tr -d ' ')
-echo "  -> $AGENT_COUNT agents installed"
+TOTAL_AGENTS=0
+TOTAL_SKILLS=0
 
-# Copy skills
-echo "Copying skills..."
-for skill_dir in "$SCRIPT_DIR/skills/"*/; do
-  skill_name=$(basename "$skill_dir")
-  mkdir -p "$DEST/skills/$skill_name"
-  cp -r "$skill_dir"* "$DEST/skills/$skill_name/"
+for harness in "${HARNESSES[@]}"; do
+  harness_path="$HARNESS_DIR/$harness"
+  if [ ! -d "$harness_path" ]; then
+    echo "WARNING: Harness '$harness' not found, skipping."
+    continue
+  fi
+
+  echo ""
+  echo "[$harness]"
+
+  # Copy agents
+  if [ -d "$harness_path/agents" ]; then
+    cp "$harness_path/agents/"*.md "$DEST/agents/" 2>/dev/null || true
+    count=$(ls "$harness_path/agents/"*.md 2>/dev/null | wc -l | tr -d ' ')
+    TOTAL_AGENTS=$((TOTAL_AGENTS + count))
+    echo "  agents: $count"
+  fi
+
+  # Copy skills
+  if [ -d "$harness_path/skills" ]; then
+    for skill_dir in "$harness_path/skills/"*/; do
+      skill_name=$(basename "$skill_dir")
+      mkdir -p "$DEST/skills/$skill_name"
+      cp -r "$skill_dir"* "$DEST/skills/$skill_name/"
+    done
+    count=$(ls -d "$harness_path/skills/"*/ 2>/dev/null | wc -l | tr -d ' ')
+    TOTAL_SKILLS=$((TOTAL_SKILLS + count))
+    echo "  skills: $count"
+  fi
 done
-SKILL_COUNT=$(ls -d "$SCRIPT_DIR/skills/"*/ 2>/dev/null | wc -l | tr -d ' ')
-echo "  -> $SKILL_COUNT skills installed"
 
 echo ""
-echo "Done! Installed $AGENT_COUNT agents and $SKILL_COUNT skills."
-echo ""
-echo "Available skills (trigger with /skill-name):"
-for skill_dir in "$SCRIPT_DIR/skills/"*/; do
-  echo "  /$(basename "$skill_dir")"
-done
+echo "Done! Installed $TOTAL_AGENTS agents and $TOTAL_SKILLS skills from ${#HARNESSES[@]} harness(es) into $DEST/"
