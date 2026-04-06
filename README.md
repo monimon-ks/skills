@@ -11,13 +11,15 @@ git clone git@github.com:monimon-ks/skills.git
 ### macOS / Linux
 
 ```bash
-./install.sh /path/to/your/project
+./install.sh                        # Global install to ~/.claude/
+./install.sh --project /path/to/project  # Per-project install
 ```
 
 ### Windows (PowerShell)
 
 ```powershell
-.\install.ps1 C:\path\to\your\project
+.\install.ps1                                # Global install to ~/.claude/
+.\install.ps1 --project C:\path\to\project   # Per-project install
 ```
 
 ## What's Included
